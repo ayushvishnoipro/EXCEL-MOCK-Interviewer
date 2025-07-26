@@ -113,3 +113,38 @@ class PromptTemplates:
         "summary": "overall performance narrative"
     }}
     """
+    
+    EXCEL_DATA_QUESTION_PROMPT = """
+    Generate {num_questions} Excel formula questions based on this real dataset:
+    
+    File: {filename}
+    Columns: {columns}
+    Data Sample (first 3 rows):
+    {sample_data}
+    Total Rows: {total_rows}
+    
+    Create practical Excel formula questions that require analyzing this specific data.
+    Focus on real business scenarios like:
+    - Calculating totals with conditions (SUMIF, COUNTIF)
+    - Finding data with lookups (VLOOKUP, INDEX/MATCH) 
+    - Creating dynamic reports and analysis
+    - Data validation and error handling
+    
+    IMPORTANT: Reference the actual column names and data values shown above.
+    
+    Return exactly this JSON format:
+    [
+      {{
+        "id": 1,
+        "question_text": "Based on the data above from {filename}, write an Excel formula to [specific task using actual column names]",
+        "model_answer": "=SPECIFIC_FORMULA_HERE with explanation of each part",
+        "difficulty": 3,
+        "question_type": "data_driven",
+        "data_context": "Brief description of relevant data columns",
+        "expected_formula_pattern": "Function pattern like SUMIF, VLOOKUP, etc."
+      }}
+    ]
+    
+    Make questions specific to the actual column names and data shown above.
+    Use realistic business scenarios that would apply to this type of data.
+    """

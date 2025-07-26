@@ -46,27 +46,33 @@ class InterviewUI:
         - Advanced formulas and functions
         - Pivot tables and data analysis
         - Data validation and error handling
-        - Real-world Excel scenarios
+        - Real-world Excel scenarios with actual data
         """)
         
-        st.markdown("### 📝 Question Generation Options")
+        st.markdown("### 📝 Question Type Options")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
-            fresh_questions = st.button(
-                "🤖 Generate Fresh Questions", 
-                type="primary",
-                help="AI will create brand new questions for this interview"
+            conceptual_questions = st.button(
+                "� Conceptual Questions", 
+                help="Theory-based Excel questions"
             )
         
         with col2:
-            bank_questions = st.button(
-                "📚 Use Question Bank", 
-                help="Use pre-defined questions (faster start)"
+            data_questions = st.button(
+                "📊 Data-Driven Questions", 
+                help="Questions based on actual Excel files"
             )
         
-        return fresh_questions, bank_questions
+        with col3:
+            mixed_questions = st.button(
+                "� Mixed Questions", 
+                type="primary",
+                help="Combination of conceptual and data-driven questions"
+            )
+        
+        return conceptual_questions, data_questions, mixed_questions
     
     @staticmethod
     def show_progress():
@@ -89,17 +95,40 @@ class InterviewUI:
         """
         st.markdown(f"### Question {question['id']}/{Config.TOTAL_QUESTIONS}")
         st.markdown(f"**Difficulty Level:** {question.get('difficulty', question['id'])}/{Config.TOTAL_QUESTIONS}")
+        
+        # Show question type indicator
+        question_type = question.get('question_type', 'conceptual')
+        if question_type == 'data_driven':
+            st.markdown("📊 **Type:** Data-Driven Question")
+        else:
+            st.markdown("🧠 **Type:** Conceptual Question")
+        
         st.markdown("---")
+        
+        # Display Excel data if this is a data-driven question
+        if question_type == 'data_driven' and 'file_info' in question:
+            InterviewUI.display_excel_data(question['file_info'])
+        
         st.markdown(question['question_text'])
         
         # User answer input
         answer_key = f"answer_{question['id']}"
-        user_answer = st.text_area(
-            "Your Answer:", 
-            key=answer_key,
-            height=150,
-            placeholder="Please provide your detailed answer here..."
-        )
+        
+        # Customize input based on question type
+        if question_type == 'data_driven':
+            user_answer = st.text_area(
+                "Your Answer (Formula/Analysis):", 
+                key=answer_key,
+                height=150,
+                placeholder="Provide your Excel formula or step-by-step analysis based on the data shown above..."
+            )
+        else:
+            user_answer = st.text_area(
+                "Your Answer:", 
+                key=answer_key,
+                height=150,
+                placeholder="Please provide your detailed answer here..."
+            )
         
         col1, col2 = st.columns([1, 4])
         
@@ -110,6 +139,48 @@ class InterviewUI:
             skip_clicked = st.button("Skip Question", key=f"skip_{question['id']}")
         
         return user_answer, submit_clicked, skip_clicked
+    
+    @staticmethod
+    def display_excel_data(file_info: Dict):
+        """
+        Display Excel data snippet for data-driven questions
+        
+        Args:
+            file_info: Dictionary containing file information and data preview
+        """
+        st.markdown("#### 📊 Excel Data Preview")
+        
+        if 'filename' in file_info:
+            st.markdown(f"**File:** {file_info['filename']}")
+        
+        if 'sheet_names' in file_info and file_info['sheet_names']:
+            st.markdown(f"**Available Sheets:** {', '.join(file_info['sheet_names'][:3])}")
+        
+        # Display data sample
+        if 'data_sample' in file_info and file_info['data_sample'] is not None:
+            st.markdown("**Data Sample:**")
+            st.dataframe(file_info['data_sample'], use_container_width=True)
+        
+        # Show column information
+        if 'columns' in file_info and file_info['columns']:
+            columns = file_info['columns']
+            # Handle case where columns might be an integer (number of columns) instead of a list
+            if isinstance(columns, int):
+                st.markdown(f"**Columns:** {columns} columns available")
+            elif isinstance(columns, list):
+                st.markdown(f"**Columns ({len(columns)}):** {', '.join(columns[:10])}")
+                if len(columns) > 10:
+                    st.markdown("*...and more*")
+            else:
+                st.markdown(f"**Columns:** {columns}")
+        
+        # Display data insights
+        if 'insights' in file_info and file_info['insights']:
+            with st.expander("📈 Data Insights"):
+                for insight in file_info['insights']:
+                    st.markdown(f"• {insight}")
+        
+        st.markdown("---")
     
     @staticmethod
     def show_evaluation(evaluation: Dict):

@@ -39,23 +39,36 @@ class ExcelInterviewApp:
             st.error(f"Failed to initialize services: {e}")
             st.stop()
     
-    def start_interview(self, use_fresh_questions: bool = True):
+    def start_interview(self, question_type: str = "mixed"):
         """
         Start a new interview
         
         Args:
-            use_fresh_questions: If True, generate fresh questions; if False, use question bank
+            question_type: Type of questions - 'conceptual', 'data_driven', or 'mixed'
         """
-        if use_fresh_questions:
-            st.info("🤖 Generating fresh questions for your unique interview experience...")
+        if question_type == "conceptual":
+            st.info("� Generating conceptual Excel questions...")
             questions = st.session_state.question_service.generate_fresh_questions()
-        else:
-            st.info("📚 Loading questions from question bank...")
-            questions = st.session_state.question_service.get_random_questions_from_bank()
-            if not questions:
-                # Fallback to fresh generation if bank is empty
-                st.warning("Question bank unavailable. Generating fresh questions...")
-                questions = st.session_state.question_service.generate_fresh_questions()
+            if questions:
+                for q in questions:
+                    q['question_type'] = 'conceptual'
+        elif question_type == "data_driven":
+            st.info("� Generating data-driven questions from Excel files...")
+            questions = st.session_state.question_service.get_mixed_questions(Config.TOTAL_QUESTIONS)
+            if questions:
+                # Filter to only data-driven questions
+                questions = [q for q in questions if q.get('question_type') == 'data_driven']
+                # If not enough data-driven questions, fill with conceptual
+                if len(questions) < Config.TOTAL_QUESTIONS:
+                    remaining = Config.TOTAL_QUESTIONS - len(questions)
+                    conceptual_questions = st.session_state.question_service.generate_fresh_questions()
+                    if conceptual_questions:
+                        for q in conceptual_questions[:remaining]:
+                            q['question_type'] = 'conceptual'
+                        questions.extend(conceptual_questions[:remaining])
+        else:  # mixed
+            st.info("🔀 Generating a mix of conceptual and data-driven questions...")
+            questions = st.session_state.question_service.get_mixed_questions(Config.TOTAL_QUESTIONS)
         
         if questions:
             if st.session_state.question_service.validate_questions(questions):
@@ -90,6 +103,9 @@ class ExcelInterviewApp:
                     'timestamp': datetime.datetime.now().isoformat(),
                     'question_id': question['id'],
                     'question': question['question_text'],
+                    'question_type': question.get('question_type', 'conceptual'),
+                    'source_file': question.get('source_file', 'N/A'),
+                    'difficulty': question.get('difficulty', question['id']),
                     'user_answer': user_answer,
                     'model_answer': question['model_answer'],
                     'score': evaluation['score'],
@@ -195,6 +211,9 @@ class ExcelInterviewApp:
             'timestamp': datetime.datetime.now().isoformat(),
             'question_id': question['id'],
             'question': question['question_text'],
+            'question_type': question.get('question_type', 'conceptual'),
+            'source_file': question.get('source_file', 'N/A'),
+            'difficulty': question.get('difficulty', question['id']),
             'user_answer': user_answer,
             'model_answer': question['model_answer'],
             'score': fallback_evaluation['score'],
@@ -220,6 +239,9 @@ class ExcelInterviewApp:
             'timestamp': datetime.datetime.now().isoformat(),
             'question_id': question['id'],
             'question': question['question_text'],
+            'question_type': question.get('question_type', 'conceptual'),
+            'source_file': question.get('source_file', 'N/A'),
+            'difficulty': question.get('difficulty', question['id']),
             'user_answer': '[SKIPPED]',
             'model_answer': question['model_answer'],
             'score': 0,
@@ -278,13 +300,15 @@ class ExcelInterviewApp:
         
         # Main application flow
         if not SessionManager.get('interview_started'):
-            # Show intro screen with question generation options
-            fresh_questions, bank_questions = InterviewUI.show_intro()
+            # Show intro screen with question type options
+            conceptual, data_driven, mixed = InterviewUI.show_intro()
             
-            if fresh_questions:
-                self.start_interview(use_fresh_questions=True)
-            elif bank_questions:
-                self.start_interview(use_fresh_questions=False)
+            if conceptual:
+                self.start_interview(question_type="conceptual")
+            elif data_driven:
+                self.start_interview(question_type="data_driven")
+            elif mixed:
+                self.start_interview(question_type="mixed")
         
         elif SessionManager.get('interview_completed'):
             # Show summary

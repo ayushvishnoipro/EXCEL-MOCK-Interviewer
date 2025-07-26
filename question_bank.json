@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "question_text": "Explain the difference between VLOOKUP and INDEX/MATCH functions. When would you use one over the other? Provide a practical example scenario for each.",
+    "model_answer": "VLOOKUP searches for a value in the first column of a range and returns a value in the same row from a specified column. INDEX/MATCH combination is more flexible - INDEX returns a value from a specific position, while MATCH finds the position of a value. Use VLOOKUP for simple left-to-right lookups in sorted data. Use INDEX/MATCH for: lookups to the left, dynamic column references, better performance with large datasets, and when you need more control. Example: VLOOKUP for finding employee salary from an ID in a simple table; INDEX/MATCH for finding prices in a product catalog where columns might change.",
+    "difficulty": 1
+  },
+  {
+    "id": 2,
+    "question_text": "You have a dataset with sales data including dates, products, regions, and amounts. Walk me through creating a pivot table to analyze monthly sales by region and product category. What filters and calculations would you add?",
+    "model_answer": "Steps: 1) Select data range and Insert > Pivot Table. 2) Drag Date to Rows and group by Month/Year. 3) Drag Region to Columns. 4) Drag Product Category to Rows (below Date). 5) Drag Sales Amount to Values (sum). Add filters: Product Category, Date Range slicers. Calculations: Running total, percentage of grand total, variance from previous month. Format with currency, add conditional formatting for top/bottom performers. Consider calculated fields for metrics like average deal size or growth rates.",
+    "difficulty": 2
+  },
+  {
+    "id": 3,
+    "question_text": "How would you handle and prevent common Excel errors like #N/A, #VALUE!, #REF!, and #DIV/0! in a complex spreadsheet? Provide specific functions and techniques.",
+    "model_answer": "Error handling strategies: 1) #N/A: Use IFERROR() or IFNA() wrapper functions, or XLOOKUP with if_not_found parameter. 2) #VALUE!: Use ISNUMBER(), ISTEXT() to validate data types, VALUE() or TEXT() for conversions. 3) #REF!: Use INDIRECT() for dynamic references, avoid deleting referenced cells, use structured references in tables. 4) #DIV/0!: Check denominator with IF(B1=0,'', A1/B1) or use IFERROR(). Best practices: Data validation at input, consistent formatting, error-checking formulas like =IF(ISERROR(formula), 'Alternative', formula), and comprehensive testing with edge cases.",
+    "difficulty": 3
+  },
+  {
+    "id": 4,
+    "question_text": "Design a data validation system for a project tracking spreadsheet that ensures data integrity across multiple worksheets. Include dropdown lists, conditional formatting, and cross-sheet validation.",
+    "model_answer": "Comprehensive validation system: 1) Create reference sheets for valid values (projects, statuses, team members). 2) Data validation rules: Dropdown lists using named ranges or table references, date validation with custom formulas, numeric ranges for budgets/hours. 3) Conditional formatting: Highlight overdue items with =TODAY()>deadline, RAG status colors, progress bars using data bars. 4) Cross-sheet validation: Use COUNTIF() to prevent duplicate project IDs, validate team member assignments against capacity sheets. 5) Error prevention: Protect formulas, use structured references, implement dependent dropdowns using INDIRECT(). 6) User guidance: Input messages, error alerts with clear instructions.",
+    "difficulty": 4
+  },
+  {
+    "id": 5,
+    "question_text": "Explain how to use Power Query to clean and transform messy data from multiple sources. Include handling duplicates, data type issues, and merging datasets.",
+    "model_answer": "Power Query transformation process: 1) Data > Get Data to import from various sources (CSV, databases, web). 2) Data cleaning: Remove duplicates using 'Remove Duplicates', handle nulls with 'Replace Values' or 'Fill Down/Up'. 3) Data type conversion: Auto-detect or manually set using 'Data Type' dropdown. 4) Text transformation: Split columns, trim whitespace, change case, extract using 'Column from Examples'. 5) Merging datasets: Use 'Merge Queries' with join types (inner, left, right, full outer), specify key columns. 6) Appending data: 'Append Queries' for similar structures. 7) Advanced: Custom columns with M language, conditional columns, grouping operations. 8) Load to worksheet or data model. Benefits: Reproducible, refreshable, handles large datasets efficiently.",
+    "difficulty": 5
+  },
+  {
+    "id": 6,
+    "question_text": "You need to create an automated reporting system that updates daily with new data and sends formatted reports via email. Describe your approach using Excel's advanced features, including any VBA automation if necessary.",
+    "model_answer": "Automated reporting solution: 1) Data foundation: Use Power Query for automatic data refresh from sources, create data model with relationships. 2) Dynamic reporting: PivotTables/PivotCharts with slicers, dynamic ranges using OFFSET() or Tables, conditional formatting for KPIs. 3) Automation with VBA: Workbook_Open event to refresh data, scheduled refresh using Application.OnTime, email automation with Outlook object model. 4) VBA email code: Create mail item, attach formatted range as image/PDF, send to distribution list. 5) Error handling: Try-catch blocks, logging, fallback procedures. 6) Security: Digital signatures, macro security settings. 7) Alternative: Use Power Automate for cloud-based automation, SharePoint integration. 8) Testing: Validate calculations, test email delivery, error scenarios. 9) Documentation: User guides, maintenance procedures.",
+    "difficulty": 6
+  }
+]

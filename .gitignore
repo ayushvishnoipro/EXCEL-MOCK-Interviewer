@@ -1,37 +1,186 @@
-# Python
+# ==========================================
+# Excel Mock Interviewer - .gitignore
+# ==========================================
+
+# ===== SECURITY & SECRETS =====
+# Environment variables and API keys
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Streamlit secrets (contains API keys)
+.streamlit/secrets.toml
+secrets.toml
+
+# ===== PYTHON =====
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
+
+# Distribution / packaging
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Virtual environments
 env/
 venv/
 myenv/
+venv*/
 ENV/
 env.bak/
 venv.bak/
+.venv/
 
-# Streamlit
-.streamlit/secrets.toml
-
-# CSV exports
+# ===== APPLICATION DATA =====
+# Interview transcripts (contains user data)
 excel_interview_transcript_*.csv
+interview_transcripts/
+transcripts/
+exports/
 
-# IDE
+# Generated question banks (may contain proprietary content)
+data/generated_questions_*.json
+
+# User uploads and temporary files
+uploads/
+temp/
+tmp/
+
+# ===== DEVELOPMENT & TESTING =====
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDEs and Editors
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.spyderproject
+.spyproject
+.rope_project_settings
 
-# OS
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ===== OPERATING SYSTEM =====
+# macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Windows
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+$RECYCLE.BIN/
 
-# Logs
+# Linux
+*~
+.directory
+.trash-*
+
+# ===== LOGS & MONITORING =====
+# Application logs
 *.log
+logs/
+log/
 
-# Temporary files
+# Streamlit logs
+streamlit.log
+
+# ===== TEMPORARY & CACHE FILES =====
+# General temporary files
 *.tmp
 *.temp
+*.bak
+*.backup
+*.orig
 
-.env
+# Cache directories
+.cache/
+cache/
+
+# ===== DOCUMENTATION =====
+# Generated documentation
+docs/_build/
+site/
+
+# ===== DEPLOYMENT =====
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Cloud deployment configs (may contain secrets)
+deployment/
+.gcloudignore
+
+# ===== MISC =====
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Large media files
+*.mp4
+*.avi
+*.mov
+*.mp3
+*.wav
+
+# Node modules (if using any JS tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

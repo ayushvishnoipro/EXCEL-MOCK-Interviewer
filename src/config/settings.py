@@ -40,7 +40,20 @@ class Config:
     
     # File Paths
     QUESTION_BANK_PATH = "data/question_bank.json"
+    EXCEL_DATA_PATH = "data"
     TRANSCRIPT_PREFIX = "excel_interview_transcript"
+    
+    # Excel Analysis Configuration
+    MAX_DATA_ROWS_DISPLAY = 5
+    EXCEL_QUESTIONS_PER_FILE = 2
+    SUPPORTED_EXCEL_EXTENSIONS = ['.xlsx', '.xls', '.csv']
+    
+    # Question Types
+    QUESTION_TYPES = {
+        'conceptual': 'Conceptual Excel Knowledge',
+        'data_driven': 'Data Analysis with Real Excel Files',
+        'mixed': 'Mixed Question Types'
+    }
     
     # UI Configuration
     PAGE_TITLE = "Excel Mock Interviewer"
@@ -63,3 +76,14 @@ class Config:
             if min_score <= score < max_score:
                 return level
         return "Expert"  # For perfect score of 5.0
+
+    # Excel Analysis Configuration
+    EXCEL_DATA_PATH = "data"
+    MAX_DATA_ROWS_DISPLAY = 5
+    EXCEL_QUESTIONS_PER_FILE = 2
+    
+    # Question Types
+    QUESTION_TYPES = {
+        'conceptual': 'Conceptual Excel Knowledge',
+        'data_driven': 'Data Analysis with Real Excel Files'
+    }

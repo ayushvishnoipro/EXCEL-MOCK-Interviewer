@@ -3,8 +3,10 @@ Question Management Service for Excel Mock Interviewer
 """
 import json
 import os
+import random
 from typing import List, Dict, Optional
 from ..config.settings import Config
+from .excel_analysis_service import ExcelAnalysisService
 
 
 class QuestionService:
@@ -19,6 +21,7 @@ class QuestionService:
         """
         self.gemini_service = gemini_service
         self.question_bank_path = Config.QUESTION_BANK_PATH
+        self.excel_service = ExcelAnalysisService(gemini_service) if gemini_service else None
     
     def load_from_bank(self) -> Optional[List[Dict]]:
         """
@@ -184,3 +187,134 @@ class QuestionService:
             random.shuffle(questions)
             return questions[:Config.TOTAL_QUESTIONS]
         return questions
+    
+    def get_mixed_questions(self, total_questions: int = 6) -> Optional[List[Dict]]:
+        """
+        Get a mix of conceptual and data-driven questions
+        
+        Args:
+            total_questions: Total number of questions to generate
+            
+        Returns:
+            Mixed list of questions or None if failed
+        """
+        if not self.excel_service:
+            return self.get_questions(force_generate=True)
+        
+        # Check for available Excel files
+        excel_files = self.excel_service.get_available_excel_files()
+        
+        if not excel_files:
+            # No Excel files available, use only conceptual questions
+            return self.get_questions(force_generate=True)
+        
+        # Split questions: 60% conceptual, 40% data-driven
+        conceptual_count = max(1, int(total_questions * 0.6))
+        data_driven_count = total_questions - conceptual_count
+        
+        mixed_questions = []
+        
+        # Get conceptual questions
+        conceptual_questions = self.generate_fresh_questions()
+        if conceptual_questions and len(conceptual_questions) >= conceptual_count:
+            # Add question type marker
+            for q in conceptual_questions[:conceptual_count]:
+                q['question_type'] = 'conceptual'
+            mixed_questions.extend(conceptual_questions[:conceptual_count])
+        
+        # Get data-driven questions
+        data_questions = self.generate_data_driven_questions(data_driven_count, excel_files)
+        if data_questions:
+            mixed_questions.extend(data_questions)
+        
+        # If we don't have enough questions, fill with conceptual ones
+        if len(mixed_questions) < total_questions:
+            remaining = total_questions - len(mixed_questions)
+            if conceptual_questions and len(conceptual_questions) > conceptual_count:
+                for q in conceptual_questions[conceptual_count:conceptual_count + remaining]:
+                    q['question_type'] = 'conceptual'
+                mixed_questions.extend(conceptual_questions[conceptual_count:conceptual_count + remaining])
+        
+        # Assign sequential IDs and sort by difficulty
+        for i, question in enumerate(mixed_questions):
+            question['id'] = i + 1
+        
+        # Sort by difficulty while maintaining some variety
+        mixed_questions.sort(key=lambda x: x.get('difficulty', x.get('id', 0)))
+        
+        return mixed_questions[:total_questions]
+    
+    def generate_data_driven_questions(self, count: int, excel_files: List[str]) -> List[Dict]:
+        """
+        Generate questions based on actual Excel files
+        
+        Args:
+            count: Number of data-driven questions to generate
+            excel_files: List of available Excel files
+            
+        Returns:
+            List of data-driven questions
+        """
+        if not self.excel_service or not excel_files:
+            return []
+        
+        data_questions = []
+        files_to_use = excel_files[:min(len(excel_files), count)]
+        
+        for i, filename in enumerate(files_to_use):
+            # Get file information
+            file_info = self.excel_service.get_excel_file_info(filename)
+            if not file_info:
+                continue
+            
+            # Generate questions for this file
+            questions = self.excel_service.generate_data_driven_questions(
+                file_info, 
+                num_questions=1
+            )
+            
+            if questions:
+                for q in questions:
+                    q['question_type'] = 'data_driven'
+                    q['source_file'] = filename
+                    # Standardize file_info format for UI display
+                    standardized_file_info = {
+                        'filename': file_info['filename'],
+                        'sheet_names': file_info.get('sheets', []),
+                        'rows': file_info['rows'],
+                        'columns': file_info.get('column_names', []),  # Use column_names as columns for UI
+                        'column_count': file_info['columns'],  # Keep original count as column_count
+                        'data_sample': file_info.get('sample_data', []),
+                        'data_types': file_info.get('data_types', {}),
+                        'insights': self._generate_data_insights(file_info)
+                    }
+                    q['file_info'] = standardized_file_info
+                    q['difficulty'] = min(6, 3 + i)  # Increase difficulty for later questions
+                data_questions.extend(questions)
+        
+        return data_questions
+    
+    def _generate_data_insights(self, file_info: Dict) -> list:
+        """
+        Generate simple insights about the Excel data for UI display.
+        """
+        insights = []
+        try:
+            if 'rows' in file_info:
+                insights.append(f"Dataset contains {file_info['rows']} rows.")
+            if 'column_names' in file_info and isinstance(file_info['column_names'], list):
+                insights.append(f"Available columns: {len(file_info['column_names'])}")
+                columns_lower = [col.lower() for col in file_info['column_names']]
+                if any('date' in col for col in columns_lower):
+                    insights.append("Contains date/time data.")
+                if any(col in columns_lower for col in ['sales', 'revenue', 'amount', 'price']):
+                    insights.append("Contains financial/sales data.")
+                if any(col in columns_lower for col in ['name', 'employee', 'customer']):
+                    insights.append("Contains person/entity information.")
+                if any(col in columns_lower for col in ['region', 'location', 'city', 'country']):
+                    insights.append("Contains geographic data.")
+            if 'sample_data' in file_info and file_info['sample_data']:
+                insights.append("Sample data is available for analysis.")
+        except Exception:
+            insights.append("Data structure available for analysis.")
+        return insights
